@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Michael Swingler</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400&display=swap">
+<style>
+/*
+  Layout: one white stage. Name block on the left, portrait bleeding off the right edge,
+  a 92px plus grid underneath that both react to the pointer. Below 1040px it stacks and
+  the portrait crops into the lower right corner, as in the mobile frame.
+*/
+:root {
+  --paper: #ffffff;
+  --ink: #20283b;
+  --gold: #efb400;
+  --plus-opacity: 0.3;
+  --pitch: 92px;
+  --gx: 76px;            /* centre of the first plus, from the left edge */
+  --gy: 34px;            /* centre of the first plus, from the top edge */
+  --gutter: clamp(24px, 6.32vw, 91px);
+  --font-body: "Proxima Nova", "Figtree", "Helvetica Neue", Arial, sans-serif;
+  color-scheme: light;
+}
+@media (max-width: 640px) {
+  :root { --gx: 22px; --gy: 50px; --gutter: 24px; }
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { background: var(--paper); }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 18px;
+  line-height: 28px;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
+}
+
+.stage {
+  position: relative;
+  isolation: isolate;
+  background: var(--paper);
+  overflow: clip;
+}
+
+/* Plus texture ------------------------------------------------------------ */
+.pattern,
+.field {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+}
+.pattern {
+  opacity: var(--plus-opacity);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='92' height='92'%3E%3Cpath d='M46 40V52M40 46H52' stroke='%2320283B' stroke-width='.436364' fill='none'/%3E%3C/svg%3E");
+  background-size: var(--pitch) var(--pitch);
+  background-position: calc(var(--gx) - 46px) calc(var(--gy) - 46px);
+}
+.has-field .pattern { display: none; }
+
+/* Hero -------------------------------------------------------------------- */
+.hero {
+  /* --pw is the portrait width. The photo is pinned to the bottom-right corner and
+     cropped by the viewport on the left; the hero reserves room for it below the text. */
+  --pw: clamp(521px, 139.1vw, 900px);
+  /* The scalp sits about 7% down the photo; keep it 16px clear of the last line of text. */
+  --overlap: calc(var(--pw) * 0.0536 - 16px);
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100svh;   /* fill the window so the corner is the window's corner */
+  padding-bottom: calc(var(--pw) * 0.765 - var(--overlap));
+}
+.intro {
+  position: relative;
+  z-index: 2;
+  padding-top: 24px;
+  padding-left: max(var(--gutter), env(safe-area-inset-left, 0px));
+  padding-right: max(var(--gutter), env(safe-area-inset-right, 0px));
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+.logo { display: block; width: 60px; height: 60px; align-self: center; }
+.name { margin: 64px 0 0; width: 119px; line-height: 0; }
+.name img { display: block; width: 100%; height: auto; }
+.bio { margin: 10px 0 0; max-width: 445px; text-wrap: pretty; }
+
+.portrait {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+  width: var(--pw);
+  max-width: none;
+  aspect-ratio: 1400 / 1071;
+  mix-blend-mode: multiply;
+  transform-origin: 100% 100%;
+  translate: var(--px, 0px) var(--py, 0px);
+  pointer-events: none;
+}
+/* The image runs a few pixels past the right and bottom edges so the pointer
+   parallax never opens a seam against the corner. */
+.portrait img {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: block;
+  width: calc(100% + 14px);
+  height: calc(100% + 8px);
+  max-width: none;
+  object-fit: cover;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+.portrait .base { opacity: 0.5; }
+
+@media (min-width: 640px) {
+  .logo { align-self: flex-start; }
+  .name { margin-top: 35px; width: 170px; }
+  .bio { margin-top: 25px; }
+  .hero { --pw: clamp(600px, 100vw, 820px); }
+}
+
+@media (min-width: 1040px) {
+  /* The hero is always the window height (never shorter than the text block needs), and the
+     portrait scales with it: 896px tall gives the Figma frame exactly. */
+  .hero {
+    --hh: max(36rem, 100svh);
+    --pw: min(86.5vw, calc(var(--hh) * 1.389));
+    /* --u is 1px at the 1440 x 896 Figma frame and grows with the portrait on bigger
+       screens, so the type, logo and wordmark keep the same proportions to the photo. */
+    --u: max(1px, calc(var(--pw) / 1245));
+    --gutter: max(clamp(24px, 6.32vw, 91px), calc(91 * var(--u)));
+    min-height: var(--hh);
+    justify-content: center;
+    padding-bottom: 0;
+  }
+  .intro { padding-top: 0; margin-bottom: calc(66 * var(--u)); }
+  .logo { width: calc(60 * var(--u)); height: calc(60 * var(--u)); }
+  .name { width: calc(170 * var(--u)); margin-top: calc(35 * var(--u)); }
+  .bio {
+    font-size: calc(18 * var(--u));
+    line-height: calc(28 * var(--u));
+    max-width: calc(445 * var(--u));
+    margin-top: calc(25 * var(--u));
+  }
+}
+
+/* Entrance ---------------------------------------------------------------- */
+@media (prefers-reduced-motion: no-preference) {
+  .portrait { animation: develop 2s cubic-bezier(0.2, 0.7, 0.2, 1) 0.15s backwards; }
+  @keyframes develop {
+    from { opacity: 0; transform: scale(1.04); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+}
+</style>
+
+<script>
+  try { if (!matchMedia("(prefers-reduced-motion: reduce)").matches) document.documentElement.classList.add("has-field"); } catch (e) {}
+</script>
+</head>
+<body>
+<div class="stage" id="stage">
+  <div class="pattern" aria-hidden="true"></div>
+  <canvas class="field" id="field" aria-hidden="true"></canvas>
+
+  <main class="hero">
+    <div class="intro">
+      <img class="logo" id="logo" src="assets/face-logo.svg" width="60" height="60" alt="">
+      <h1 class="name"><img src="assets/michael-swingler.svg" width="170" height="48" alt="Michael Swingler"></h1>
+      <p class="bio">Product designer with 20+ years of experience, most recently focused on conversational AI inside complex enterprise software. I lead design for Otto, ServiceNow’s conversational AI platform, and do my best work in ambiguity: framing the real problem, bringing the right people into the room, and turning rough ideas into direction teams can act on.</p>
+    </div>
+
+    <div class="portrait" id="portrait">
+      <img class="base" src="assets/photo-1400.webp"
+           srcset="assets/photo-900.webp 900w, assets/photo-1400.webp 1400w"
+           sizes="(min-width: 1040px) 1245px, 140vw"
+           width="1400" height="1071"
+           alt="Black and white portrait of Michael Swingler squinting with one eye and tugging at his ear.">
+    </div>
+  </main>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var root = document.documentElement;
+  var canvas = document.getElementById("field");
+  var portrait = document.getElementById("portrait");
+  var logo = document.getElementById("logo");
+  var ctx = canvas.getContext && canvas.getContext("2d");
+  var reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  if (!ctx || reduce) { root.classList.remove("has-field"); return; }
+
+  var PITCH = 92, ARM = 6;
+  var INK = [32, 40, 59], GOLD = [239, 180, 0];
+  var BASE_ALPHA = 0.3, BASE_WIDTH = 0.436364;
+  var HOVER_R = 190;
+
+  var W = 0, H = 0, dpr = 1, gx = 76, gy = 34;
+  var pluses = [];
+  var ripples = [];
+  var intro = null;
+  var raf = 0;
+  var mouse = { x: -9999, y: -9999, on: false };
+  var par = { x: 0, y: 0, tx: 0, ty: 0 };
+
+  function clamp(v, a, b) { return v < a ? a : v > b ? b : v; }
+  function cssPx(name, fallback) {
+    var n = parseFloat(getComputedStyle(root).getPropertyValue(name));
+    return isNaN(n) ? fallback : n;
+  }
+
+  function build() {
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    W = window.innerWidth; H = window.innerHeight;
+    canvas.width = Math.round(W * dpr);
+    canvas.height = Math.round(H * dpr);
+    gx = cssPx("--gx", 76); gy = cssPx("--gy", 34);
+    var x0 = gx - PITCH * Math.ceil((gx + PITCH) / PITCH);
+    var y0 = gy - PITCH * Math.ceil((gy + PITCH) / PITCH);
+    pluses = [];
+    for (var y = y0; y <= H + PITCH; y += PITCH) {
+      for (var x = x0; x <= W + PITCH; x += PITCH) {
+        pluses.push({ x: x, y: y, v: 0 });
+      }
+    }
+    kick();
+  }
+
+  function startIntro() {
+    var r = logo.getBoundingClientRect();
+    intro = { x: r.left + r.width / 2, y: r.top + r.height / 2, t0: performance.now(), speed: 1100, done: false };
+    kick();
+  }
+
+  function addRipple(x, y) {
+    ripples.push({ x: x, y: y, t0: performance.now(), speed: 620, width: 90, life: 1.5 });
+    kick();
+  }
+
+  function kick() { if (!raf) raf = requestAnimationFrame(frame); }
+
+  function frame(now) {
+    raf = 0;
+    var busy = false;
+
+    par.x += (par.tx - par.x) * 0.08;
+    par.y += (par.ty - par.y) * 0.08;
+    if (Math.abs(par.tx - par.x) > 0.02 || Math.abs(par.ty - par.y) > 0.02) busy = true;
+    var offX = -par.x * 0.5, offY = -par.y * 0.5;
+    portrait.style.setProperty("--px", par.x.toFixed(2) + "px");
+    portrait.style.setProperty("--py", par.y.toFixed(2) + "px");
+
+    for (var i = ripples.length - 1; i >= 0; i--) {
+      if ((now - ripples[i].t0) / 1000 > ripples[i].life) ripples.splice(i, 1);
+    }
+    if (ripples.length) busy = true;
+
+    var introR = 0;
+    if (intro && !intro.done) {
+      introR = (now - intro.t0) / 1000 * intro.speed;
+      if (introR > Math.hypot(W, H) + 400) intro.done = true; else busy = true;
+    }
+
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, W, H);
+    ctx.lineCap = "round";
+
+    for (var n = 0; n < pluses.length; n++) {
+      var p = pluses[n];
+      var x = p.x + offX, y = p.y + offY;
+      var target = 0;
+
+      if (mouse.on) {
+        var dm = Math.hypot(x - mouse.x, y - mouse.y);
+        if (dm < HOVER_R) { var t = 1 - dm / HOVER_R; target = t * t * (3 - 2 * t); }
+      }
+      for (var k = 0; k < ripples.length; k++) {
+        var rp = ripples[k];
+        var age = (now - rp.t0) / 1000;
+        var d = Math.hypot(x - rp.x, y - rp.y);
+        var q = (d - age * rp.speed) / rp.width;
+        var bump = Math.exp(-q * q) * (1 - age / rp.life);
+        if (bump > target) target = bump;
+      }
+
+      var vis = 1;
+      if (intro && !intro.done) {
+        var di = Math.hypot(x - intro.x, y - intro.y);
+        vis = clamp((introR - di) / 160, 0, 1);
+        var qi = (di - introR) / 110;
+        var pop = Math.exp(-qi * qi) * 0.75;
+        if (pop > target) target = pop;
+      }
+
+      p.v += (target - p.v) * 0.18;
+      if (Math.abs(target - p.v) > 0.004) busy = true;
+      else if (target === 0) p.v = 0;
+
+      var v = p.v;
+      var alpha = (BASE_ALPHA + 0.55 * v) * vis;
+      if (alpha < 0.01) continue;
+
+      var m = v * v;
+      var cr = Math.round(INK[0] + (GOLD[0] - INK[0]) * m);
+      var cg = Math.round(INK[1] + (GOLD[1] - INK[1]) * m);
+      var cb = Math.round(INK[2] + (GOLD[2] - INK[2]) * m);
+      var a = ARM * (1 + 0.85 * v);
+      var rot = v * Math.PI / 4;
+      var c = Math.cos(rot) * a, s = Math.sin(rot) * a;
+
+      ctx.strokeStyle = "rgba(" + cr + "," + cg + "," + cb + "," + alpha.toFixed(3) + ")";
+      ctx.lineWidth = BASE_WIDTH + 1.1 * v;
+      ctx.beginPath();
+      ctx.moveTo(x - c, y - s); ctx.lineTo(x + c, y + s);
+      ctx.moveTo(x + s, y - c); ctx.lineTo(x - s, y + c);
+      ctx.stroke();
+    }
+
+    if (busy || mouse.on) raf = requestAnimationFrame(frame);
+  }
+
+  window.addEventListener("pointermove", function (e) {
+    if (e.pointerType === "touch") return;
+    mouse.x = e.clientX; mouse.y = e.clientY; mouse.on = true;
+    par.tx = (e.clientX / W - 0.5) * 2 * 10;
+    par.ty = (e.clientY / H - 0.5) * 2 * 6;
+    kick();
+  }, { passive: true });
+
+  document.documentElement.addEventListener("pointerleave", function () {
+    mouse.on = false; par.tx = 0; par.ty = 0; kick();
+  });
+
+  window.addEventListener("pointerdown", function (e) {
+    addRipple(e.clientX, e.clientY);
+  }, { passive: true });
+
+  var resizeTimer = 0;
+  window.addEventListener("resize", function () {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(build, 80);
+  });
+
+  build();
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(function () { if (!intro) startIntro(); });
+    setTimeout(function () { if (!intro) startIntro(); }, 600);
+  } else {
+    startIntro();
+  }
+})();
+</script>
+</body>
+</html>
