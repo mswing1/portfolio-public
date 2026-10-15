@@ -11,7 +11,7 @@
 <style>
 /*
   Layout: one white stage. Name block on the left, portrait bleeding off the right edge,
-  a 92px plus grid underneath that both react to the pointer. Below 1040px it stacks and
+  a 40px plus grid underneath that both react to the pointer. Below 1040px it stacks and
   the portrait crops into the lower right corner, as in the mobile frame.
 */
 :root {
@@ -19,7 +19,7 @@
   --ink: #20283b;
   --gold: #efb400;
   --plus-opacity: 0.3;
-  --pitch: 92px;
+  --pitch: 40px;
   --gx: 76px;            /* centre of the first plus, from the left edge */
   --gy: 34px;            /* centre of the first plus, from the top edge */
   --gutter: clamp(24px, 6.32vw, 91px);
@@ -62,7 +62,7 @@ body {
 }
 .pattern {
   opacity: var(--plus-opacity);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='92' height='92'%3E%3Cpath d='M46 40V52M40 46H52' stroke='%2320283B' stroke-width='.436364' fill='none'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Cpath d='M20 17V23M17 20H23' stroke='%2320283B' stroke-width='.436364' fill='none'/%3E%3C/svg%3E");
   background-size: var(--pitch) var(--pitch);
   background-position: calc(var(--gx) - 46px) calc(var(--gy) - 46px);
 }
@@ -226,7 +226,7 @@ body {
 
   if (!ctx || reduce) { root.classList.remove("has-field"); return; }
 
-  var PITCH = 92, ARM = 6;
+  var PITCH = 40, ARM = 3;
   var INK = [32, 40, 59], GOLD = [239, 180, 0];
   var BASE_ALPHA = 0.3, BASE_WIDTH = 0.436364;
   var HOVER_R = 190;
